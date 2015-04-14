@@ -1,12 +1,10 @@
-;;; xclip.el --- Emacs Interface to XClip
+;;; global-clipboard-mode.el --- Share Clipboard among Multiple Emacs Instances
 
-;; Copyright (C) 2007  Leo Shidai Liu
+;; Copyright (C) 2015 10sr
 
-;; Author: Leo Shidai Liu <shidai.liu@gmail.com>
+;; Author: 10sr <8slashes+el [at] gmail [dot] com>
 ;; Keywords: convenience, tools
-;; Created: 2007-12-30
-
-;; $Id: xclip.el,v 0.9 2008/02/10 11:12:56 leo Exp $
+;; Contributor: Leo Shidai Liu <shidai.liu@gmail.com>
 
 ;; This file is free software; you can redistribute it and/or modify
 ;; it under the terms of the GNU General Public License as published by
@@ -25,8 +23,9 @@
 
 ;;; Commentary:
 
-;; This code provides an Emacs interface to the tool with the same
-;; name on http://people.debian.org/~kims/xclip/.
+;; `global-clipboard-mode' is a global minor-mode to share the content of Emacs
+;; clipboard among multiple Emacs instances.
+
 
 ;;; Code:
 (defvar xclip-program (executable-find "xclip")
@@ -109,4 +108,4 @@ See `x-set-selection'."
 
 
 (provide 'xclip)
-;;; xclip.el ends here
+;;; global-clipboard-mode.el ends here
