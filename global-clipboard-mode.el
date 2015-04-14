@@ -28,84 +28,84 @@
 
 
 ;;; Code:
-(defvar xclip-program (executable-find "xclip")
+(defvar global-clipboard-mode-program (executable-find "xclip")
   "Name of XClip program tool.")
 
-(defvar xclip-select-enable-clipboard t
+(defvar global-clipboard-mode-select-enable-clipboard t
   "Non-nil means cutting and pasting uses the clipboard.
 This is in addition to, but in preference to, the primary selection.")
 
-(defvar xclip-last-selected-text-clipboard nil
+(defvar global-clipboard-mode-last-selected-text-clipboard nil
   "The value of the CLIPBOARD X selection from xclip.")
 
-(defvar xclip-last-selected-text-primary nil
+(defvar global-clipboard-mode-last-selected-text-primary nil
   "The value of the PRIMARY X selection from xclip.")
 
-(defun xclip-set-selection (type data)
+(defun global-clipboard-mode-set-selection (type data)
   "TYPE is a symbol: primary, secondary and clipboard.
 
 See `x-set-selection'."
-  (when (and xclip-program (getenv "DISPLAY"))
+  (when (and global-clipboard-mode-program (getenv "DISPLAY"))
     (let* ((process-connection-type nil)
            (proc (start-process "xclip" nil "xclip"
                                 "-selection" (symbol-name type))))
       (process-send-string proc data)
       (process-send-eof proc))))
 
-(defun xclip-select-text (text &optional push)
+(defun global-clipboard-mode-select-text (text &optional push)
   "See `x-select-text'."
-  (xclip-set-selection 'primary text)
-  (setq xclip-last-selected-text-primary text)
-  (when xclip-select-enable-clipboard
-    (xclip-set-selection 'clipboard text)
-    (setq xclip-last-selected-text-clipboard text)))
+  (global-clipboard-mode-set-selection 'primary text)
+  (setq global-clipboard-mode-last-selected-text-primary text)
+  (when global-clipboard-mode-select-enable-clipboard
+    (global-clipboard-mode-set-selection 'clipboard text)
+    (setq global-clipboard-mode-last-selected-text-clipboard text)))
 
-(defun xclip-selection-value ()
+(defun global-clipboard-mode-selection-value ()
   "See `x-cut-buffer-or-selection-value'."
-  (when (and xclip-program (getenv "DISPLAY"))
+  (when (and global-clipboard-mode-program (getenv "DISPLAY"))
     (let (clip-text primary-text)
-      (when xclip-select-enable-clipboard
+      (when global-clipboard-mode-select-enable-clipboard
         (setq clip-text (shell-command-to-string "xclip -o -selection clipboard"))
         (setq clip-text
               (cond ;; check clipboard selection
                ((or (not clip-text) (string= clip-text ""))
-                (setq xclip-last-selected-text-primary nil))
-               ((eq      clip-text xclip-last-selected-text-clipboard) nil)
-               ((string= clip-text xclip-last-selected-text-clipboard)
+                (setq global-clipboard-mode-last-selected-text-primary nil))
+               ((eq      clip-text global-clipboard-mode-last-selected-text-clipboard) nil)
+               ((string= clip-text global-clipboard-mode-last-selected-text-clipboard)
                 ;; Record the newer string,
                 ;; so subsequent calls can use the `eq' test.
-                (setq xclip-last-selected-text-clipboard clip-text)
+                (setq global-clipboard-mode-last-selected-text-clipboard clip-text)
                 nil)
-               (t (setq xclip-last-selected-text-clipboard clip-text)))))
+               (t (setq global-clipboard-mode-last-selected-text-clipboard clip-text)))))
       (setq primary-text (shell-command-to-string "xclip -o"))
       (setq primary-text
             (cond ;; check primary selection
              ((or (not primary-text) (string= primary-text ""))
-              (setq xclip-last-selected-text-primary nil))
-             ((eq      primary-text xclip-last-selected-text-primary) nil)
-             ((string= primary-text xclip-last-selected-text-primary)
+              (setq global-clipboard-mode-last-selected-text-primary nil))
+             ((eq      primary-text global-clipboard-mode-last-selected-text-primary) nil)
+             ((string= primary-text global-clipboard-mode-last-selected-text-primary)
               ;; Record the newer string,
               ;; so subsequent calls can use the `eq' test.
-              (setq xclip-last-selected-text-primary primary-text)
+              (setq global-clipboard-mode-last-selected-text-primary primary-text)
               nil)
-             (t (setq xclip-last-selected-text-primary primary-text))))
+             (t (setq global-clipboard-mode-last-selected-text-primary primary-text))))
       (or clip-text primary-text))))
 
 ;;;###autoload
-(defun turn-on-xclip ()
+(defun turn-on-global-clipboard-mode ()
   (interactive)
-  (setq interprogram-cut-function 'xclip-select-text)
-  (setq interprogram-paste-function 'xclip-selection-value))
+  (setq interprogram-cut-function 'global-clipboard-mode-select-text)
+  (setq interprogram-paste-function 'global-clipboard-mode-selection-value))
 
 ;;;###autoload
-(defun turn-off-xclip ()
+(defun turn-off-global-clipboard-mode ()
   (interactive)
   (setq interprogram-cut-function nil)
   (setq interprogram-paste-function nil))
 
 
-(add-hook 'terminal-init-xterm-hook 'turn-on-xclip)
+(add-hook 'terminal-init-xterm-hook 'turn-on-global-clipboard-mode)
 
 
-(provide 'xclip)
+(provide 'global-clipboard-mode)
 ;;; global-clipboard-mode.el ends here
