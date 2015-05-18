@@ -1,6 +1,7 @@
 (require 'global-clipboard-mode)
 
 (defun make-random-string ()
+  "Make rundom string with `random' and `sha1'."
   (sha1 (number-to-string (random))))
 
 (ert-deftest test-global-clipboard-mode ()
