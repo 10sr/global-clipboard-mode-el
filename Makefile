@@ -1,14 +1,16 @@
 emacs ?= emacs
 
-ert_tests_el = $(wildcard test/*.el)
 el = $(wildcard *.el)
 elc = $(el:%.el=%.elc)
 
-.PHONY: all test test-ert build
+ert_tests_el = $(wildcard test/*.el)
+tests_sh = $(wildcard test/*.sh)
+
+.PHONY: all test test-ert test-sh build
 
 all:
 
-test: build test-ert info
+test: build test-ert test-sh info
 
 build: $(elc)
 
@@ -19,6 +21,9 @@ $(elc): %.elc: %.el
 test-ert: $(ert_tests_el)
 	$(emacs) -batch -Q -L . --eval "(require 'ert)" $(^:%=-l "%") \
 		-f ert-run-tests-batch-and-exit
+
+test-sh: $(tests_sh)
+	EMACS=$(emacs) sh -c "$(^:%='%'&&)true"
 
 
 elisp_get_file_package_info := \
