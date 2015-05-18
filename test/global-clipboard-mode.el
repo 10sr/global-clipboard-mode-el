@@ -8,4 +8,10 @@
     (global-clipboard-mode 1)
     (kill-new str)
     (should (string= str
-                     (current-kill 0)))))
+                     (current-kill 0)))
+    (should (string= str
+                     (with-temp-buffer
+                       (insert-file-contents-literally
+                        global-clipboard-mode-clipboard-file)
+                       (buffer-substring-no-properties (point-min)
+                                                        (point-max)))))))
