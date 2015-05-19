@@ -3,7 +3,7 @@ set -eux
 
 test -n "$EMACS"
 
-alias make_random_str='echo $RANDOM | shasum | cut -d " " -f 1'
+alias make_random_str='head -c 8 /dev/urandom | shasum | cut -d " " -f 1'
 
 str=`make_random_str`
 
