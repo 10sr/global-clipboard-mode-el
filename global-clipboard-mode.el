@@ -3,9 +3,9 @@
 ;; Copyright (C) 2015 10sr
 
 ;; Author: 10sr <8slashes+el [at] gmail [dot] com>
-;; Keywords: convenience, tools
-;; Contributor: Leo Shidai Liu <shidai.liu@gmail.com>
+;; Keywords: convenience, tools, clipboard, kill-ring
 ;; Version: 0.0.1
+;; Contributor: Leo Shidai Liu <shidai.liu@gmail.com>
 
 ;; This file is free software; you can redistribute it and/or modify
 ;; it under the terms of the GNU General Public License as published by
@@ -26,6 +26,18 @@
 
 ;; `global-clipboard-mode' is a global minor-mode to share the content of Emacs
 ;; clipboard among multiple Emacs instances.
+
+;; To use, simply enable `global-clipboard-mode':
+
+;; (global-clipboard-mode 1)
+
+;; Optionally, you can change the clipboard file path by:
+
+;; (setq global-clipboard-mode-clipboard-file
+;;       "/tmp/clipboard.dat")
+
+;; Whenever you "kill" the text will be put into the clipboard file, and "yank"
+;; to get text from the clipboard file.
 
 
 ;;; Code:
