@@ -9,6 +9,8 @@
 
 (ert-deftest test-global-clipboard-mode ()
   (let ((str (make-random-string)))
+    (message "String to kill: %s"
+             str)
     (global-clipboard-mode 1)
     (kill-new str)
     (should (string= str
