@@ -31,13 +31,10 @@
 
 ;; (global-clipboard-mode 1)
 
-;; Optionally, you can change the clipboard file path by:
+;; Optionally, you can change the file which clipboard contents will be stored:
 
 ;; (setq global-clipboard-mode-clipboard-file
 ;;       "/tmp/clipboard.dat")
-
-;; Whenever you "kill" the text will be put into the clipboard file, and "yank"
-;; to get text from the clipboard file.
 
 
 ;;; Code:
