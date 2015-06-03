@@ -1,5 +1,8 @@
 (require 'global-clipboard-mode)
 
+(setq global-clipboard-mode-clipboard-file
+      (make-temp-file "global-clipboard-mode.test."))
+
 (defun make-random-string ()
   "Make rundom string with `random' and `sha1'."
   (sha1 (number-to-string (random))))
