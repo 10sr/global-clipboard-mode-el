@@ -1,3 +1,7 @@
+[![Build Status](https://travis-ci.org/10sr/global-clipboard-mode-el.svg?branch=master)](https://travis-ci.org/10sr/global-clipboard-mode-el)
+
+
+
 global-clipboard-mode
 =====================
 
