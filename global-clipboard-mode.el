@@ -3,7 +3,8 @@
 ;; Copyright (C) 2015 10sr
 
 ;; Author: 10sr <8slashes+el [at] gmail [dot] com>
-;; Keywords: convenience, tools
+;; Keywords: convenience, tools, clipboard, kill-ring
+;; Version: 0.0.1
 ;; Contributor: Leo Shidai Liu <shidai.liu@gmail.com>
 
 ;; This file is free software; you can redistribute it and/or modify
@@ -26,85 +27,77 @@
 ;; `global-clipboard-mode' is a global minor-mode to share the content of Emacs
 ;; clipboard among multiple Emacs instances.
 
+;; To use, simply enable `global-clipboard-mode':
+
+;; (global-clipboard-mode 1)
+
+;; Optionally, you can change the file which clipboard contents will be stored:
+
+;; (setq global-clipboard-mode-clipboard-file
+;;       "/tmp/clipboard.dat")
+
 
 ;;; Code:
-(defvar global-clipboard-mode-program (executable-find "xclip")
-  "Name of XClip program tool.")
 
-(defvar global-clipboard-mode-select-enable-clipboard t
-  "Non-nil means cutting and pasting uses the clipboard.
-This is in addition to, but in preference to, the primary selection.")
+(defvar global-clipboard-mode-clipboard-file
+  (concat temporary-file-directory
+          "clipboard.dat")
+  "Path to file that contains the content of clipboard.")
 
-(defvar global-clipboard-mode-last-selected-text-clipboard nil
-  "The value of the CLIPBOARD X selection from xclip.")
+(defvar global-clipboard-mode-last-clipboard nil
+  "The value of the clipboard.")
 
-(defvar global-clipboard-mode-last-selected-text-primary nil
-  "The value of the PRIMARY X selection from xclip.")
 
-(defun global-clipboard-mode-set-selection (type data)
-  "TYPE is a symbol: primary, secondary and clipboard.
 
-See `x-set-selection'."
-  (when (and global-clipboard-mode-program (getenv "DISPLAY"))
-    (let* ((process-connection-type nil)
-           (proc (start-process "xclip" nil "xclip"
-                                "-selection" (symbol-name type))))
-      (process-send-string proc data)
-      (process-send-eof proc))))
-
-(defun global-clipboard-mode-select-text (text &optional push)
-  "See `x-select-text'."
-  (global-clipboard-mode-set-selection 'primary text)
-  (setq global-clipboard-mode-last-selected-text-primary text)
-  (when global-clipboard-mode-select-enable-clipboard
-    (global-clipboard-mode-set-selection 'clipboard text)
-    (setq global-clipboard-mode-last-selected-text-clipboard text)))
+(defun global-clipboard-mode-select-text (text)
+  "Update clipboard content to TEXT.
+This function will be set to `interprogram-cut-function'."
+  (with-temp-buffer
+    (insert text)
+    (write-region (point-min)
+                  (point-max)
+                  global-clipboard-mode-clipboard-file))
+  (setq global-clipboard-mode-last-clipboard text))
 
 (defun global-clipboard-mode-selection-value ()
-  "See `x-cut-buffer-or-selection-value'."
-  (when (and global-clipboard-mode-program (getenv "DISPLAY"))
-    (let (clip-text primary-text)
-      (when global-clipboard-mode-select-enable-clipboard
-        (setq clip-text (shell-command-to-string "xclip -o -selection clipboard"))
-        (setq clip-text
-              (cond ;; check clipboard selection
-               ((or (not clip-text) (string= clip-text ""))
-                (setq global-clipboard-mode-last-selected-text-primary nil))
-               ((eq      clip-text global-clipboard-mode-last-selected-text-clipboard) nil)
-               ((string= clip-text global-clipboard-mode-last-selected-text-clipboard)
-                ;; Record the newer string,
-                ;; so subsequent calls can use the `eq' test.
-                (setq global-clipboard-mode-last-selected-text-clipboard clip-text)
-                nil)
-               (t (setq global-clipboard-mode-last-selected-text-clipboard clip-text)))))
-      (setq primary-text (shell-command-to-string "xclip -o"))
-      (setq primary-text
-            (cond ;; check primary selection
-             ((or (not primary-text) (string= primary-text ""))
-              (setq global-clipboard-mode-last-selected-text-primary nil))
-             ((eq      primary-text global-clipboard-mode-last-selected-text-primary) nil)
-             ((string= primary-text global-clipboard-mode-last-selected-text-primary)
-              ;; Record the newer string,
-              ;; so subsequent calls can use the `eq' test.
-              (setq global-clipboard-mode-last-selected-text-primary primary-text)
-              nil)
-             (t (setq global-clipboard-mode-last-selected-text-primary primary-text))))
-      (or clip-text primary-text))))
+  "Get current clipboard text.
+This function will be set to `interprogram-paste-function'."
+  (let ((text (with-temp-buffer
+                (insert-file-contents-literally
+                 global-clipboard-mode-clipboard-file)
+                (buffer-substring-no-properties (point-min)
+                                                (point-max)))))
+
+    (cond
+     ((or (not text) (string= text ""))
+      (setq global-clipboard-mode-last-clipboard nil))
+
+     ((eq text global-clipboard-mode-last-clipboard)
+      nil)
+
+     ((string= text global-clipboard-mode-last-clipboard)
+      ;; Record the newer string,
+      ;; so subsequent calls can use the `eq' test.
+      (setq global-clipboard-mode-last-clipboard text)
+      nil)
+
+     (t
+      (setq global-clipboard-mode-last-clipboard text)))))
+
+
+;; Minor-mode
 
 ;;;###autoload
-(defun turn-on-global-clipboard-mode ()
-  (interactive)
-  (setq interprogram-cut-function 'global-clipboard-mode-select-text)
-  (setq interprogram-paste-function 'global-clipboard-mode-selection-value))
-
-;;;###autoload
-(defun turn-off-global-clipboard-mode ()
-  (interactive)
-  (setq interprogram-cut-function nil)
-  (setq interprogram-paste-function nil))
-
-
-(add-hook 'terminal-init-xterm-hook 'turn-on-global-clipboard-mode)
+(define-minor-mode global-clipboard-mode
+  "Minor-mode to share clipboard among multiple Emacs instances."
+  :global t
+  :lighter ""
+  (if global-clipboard-mode
+      (progn
+        (setq interprogram-cut-function 'global-clipboard-mode-select-text)
+        (setq interprogram-paste-function 'global-clipboard-mode-selection-value))
+    (setq interprogram-cut-function nil)
+    (setq interprogram-paste-function nil)))
 
 
 (provide 'global-clipboard-mode)
